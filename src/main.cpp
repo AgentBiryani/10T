@@ -75,11 +75,12 @@ void opcontrol() {
         double rightPower = (forwardPower * turnP) - turnPower;
         Catapult.setBrakeMode(AbstractMotor::brakeMode::coast);
 
+
+		forwardPower *= forwardPower;
+		turnPower *= turnPower;
         // Limits the power to -5.0 to 5.0
         leftPower = std::clamp(leftPower, -5.0, 5.0);
         rightPower = std::clamp(rightPower, -5.0, 5.0);
-		forwardPower *= forwardPower;
-		turnPower *= turnPower;
 
         // Sets the power of each motor
         leftFront.moveVelocity(leftPower * currentPower);
