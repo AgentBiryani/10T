@@ -12,7 +12,6 @@ void competition_initialize() {}
 
 void autonomous() {}
 
-
 void opcontrol() {
     // Creating controller object
     Controller contr;
@@ -68,9 +67,7 @@ void opcontrol() {
         // Get joystick inputs
         double forwardPower = controller.getAnalog(ControllerAnalog::rightX);
         double turnPower = controller.getAnalog(ControllerAnalog::leftY);
-        forwardPower *= forwardPower;
         if (controller.getAnalog(ControllerAnalog::rightX) < 0) {forwardPower *= -1;}
-        turnPower *= turnPower;
         if (controller.getAnalog(ControllerAnalog::leftY) < 0) {turnPower *= -1;}
 
         double cpost = rotation.get();
@@ -78,18 +75,11 @@ void opcontrol() {
         double rightPower = (forwardPower * turnP) - turnPower;
         Catapult.setBrakeMode(AbstractMotor::brakeMode::coast);
 
-        // Limits the power to -1.0 to 1.0
+        // Limits the power to -5.0 to 5.0
         leftPower = std::clamp(leftPower, -5.0, 5.0);
         rightPower = std::clamp(rightPower, -5.0, 5.0);
-
-        // Gradually accelerates or deaccelerates each motor to the target power
-        if (currentPower < targetPower) {
-            currentPower += ACCELERATION_RATE * pros::c::millis();
-            currentPower = std::min(currentPower, targetPower);
-        } else if (currentPower > targetPower) {
-            currentPower += DEACCELERATION_RATE * pros::c::millis();
-            currentPower = std::max(currentPower, targetPower);
-        }
+		forwardPower *= forwardPower;
+		turnPower *= turnPower;
 
         // Sets the power of each motor
         leftFront.moveVelocity(leftPower * currentPower);
@@ -98,6 +88,15 @@ void opcontrol() {
         rightFront.moveVelocity(rightPower * currentPower);
         rightMiddle.moveVelocity(rightPower * currentPower);
         rightRear.moveVelocity(rightPower * currentPower);
+		
+		// Gradually accelerates or deaccelerates each motor to the target power
+		if (currentPower < targetPower) {
+            currentPower += ACCELERATION_RATE * pros::c::millis();
+            currentPower = std::min(currentPower, targetPower);
+        } else if (currentPower > targetPower) {
+            currentPower += DEACCELERATION_RATE * pros::c::millis();
+            currentPower = std::max(currentPower, targetPower);
+        }
 
         // Turns on intake
         if (intake.isPressed()){
