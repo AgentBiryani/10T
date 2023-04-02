@@ -1,93 +1,153 @@
 #include "main.h"
+#include "okapi/api.hpp"
 
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
+using namespace okapi;
+using namespace std;
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
-void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
+void initialize() {}
 
-	pros::lcd::register_btn1_cb(on_center_button);
-}
-
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
 void disabled() {}
 
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
 void competition_initialize() {}
 
-/**
- * Runs the user autonomous code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the autonomous
- * mode. Alternatively, this function may be called in initialize or opcontrol
- * for non-competition testing purposes.
- *
- * If the robot is disabled or communications is lost, the autonomous task
- * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
- */
 void autonomous() {}
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
+
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+    // Creating controller object
+    Controller contr;
 
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-		int left = master.get_analog(ANALOG_LEFT_Y);
-		int right = master.get_analog(ANALOG_RIGHT_Y);
+    // Creating motor objects for intake and catapult
+    Motor Intake(8, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+    Motor Catapult(16, true, AbstractMotor::gearset::red, AbstractMotor::encoderUnits::degrees);
 
-		left_mtr = left;
-		right_mtr = right;
+    // Creating object for rotation sensor - gets position of catapult motor
+    RotationSensor rotation(18);
+    
+    // Defining buttons for controller actions
+    ControllerButton intake(ControllerDigital::L1);
+    ControllerButton outtake(ControllerDigital::L2);
+    ControllerButton Shoot(ControllerDigital::R1);
+    ControllerButton Speed(ControllerDigital::R2);
 
-		pros::delay(20);
-	}
+    // Defining motor ports for the left and right sides of the robot
+    const int LEFT_FRONT_PORT = 12;
+    const int LEFT_MIDDLE_PORT = 13;
+    const int LEFT_REAR_PORT = 14;
+    const int RIGHT_FRONT_PORT = 1;
+    const int RIGHT_MIDDLE_PORT = 3;
+    const int RIGHT_REAR_PORT = 5;
+
+    // Defining motor objects for the left and right sides of the robot
+    Motor leftFront(LEFT_FRONT_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+    Motor leftMiddle(LEFT_MIDDLE_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+    Motor leftRear(LEFT_REAR_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+    Motor rightFront(RIGHT_FRONT_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+    Motor rightMiddle(RIGHT_MIDDLE_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+    Motor rightRear(RIGHT_REAR_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+
+    // Defining controller object
+    Controller controller;
+
+    // Defining constants for acceleration and deacceleration rates
+    const double ACCELERATION_RATE = 0.55; // increase in power per millisecond
+    const double DEACCELERATION_RATE = -2.5; // decrease in power per millisecond
+    
+    // Variables for catapult
+    double cpost = rotation.get();
+    float prime = 71;
+    float cataspeed;
+
+    // Variables for drive
+    double targetPower = 550.0;
+    double currentPower;
+    double turnP;
+
+
+    while (true){                
+        // Get joystick inputs
+        double forwardPower = controller.getAnalog(ControllerAnalog::rightX);
+        double turnPower = controller.getAnalog(ControllerAnalog::leftY);
+        forwardPower *= forwardPower;
+        if (controller.getAnalog(ControllerAnalog::rightX) < 0) {forwardPower *= -1;}
+        turnPower *= turnPower;
+        if (controller.getAnalog(ControllerAnalog::leftY) < 0) {turnPower *= -1;}
+
+        double cpost = rotation.get();
+        double leftPower = (forwardPower * turnP) + turnPower;
+        double rightPower = (forwardPower * turnP) - turnPower;
+        Catapult.setBrakeMode(AbstractMotor::brakeMode::coast);
+
+        // Limits the power to -1.0 to 1.0
+        leftPower = std::clamp(leftPower, -5.0, 5.0);
+        rightPower = std::clamp(rightPower, -5.0, 5.0);
+
+        // Gradually accelerates or deaccelerates each motor to the target power
+        if (currentPower < targetPower) {
+            currentPower += ACCELERATION_RATE * pros::c::millis();
+            currentPower = std::min(currentPower, targetPower);
+        } else if (currentPower > targetPower) {
+            currentPower += DEACCELERATION_RATE * pros::c::millis();
+            currentPower = std::max(currentPower, targetPower);
+        }
+
+        // Sets the power of each motor
+        leftFront.moveVelocity(leftPower * currentPower);
+        leftMiddle.moveVelocity(leftPower * currentPower);
+        leftRear.moveVelocity(leftPower * currentPower);
+        rightFront.moveVelocity(rightPower * currentPower);
+        rightMiddle.moveVelocity(rightPower * currentPower);
+        rightRear.moveVelocity(rightPower * currentPower);
+
+        // Turns on intake
+        if (intake.isPressed()){
+            Intake.moveVoltage(12000);
+        } else if (outtake.isPressed()) {
+        // Reverses intake
+            Intake.moveVoltage(-12000);
+        } else {
+        // Brakes intake - coast brake mode
+            Intake.moveVoltage(0);
+        }
+
+        if (prime - cpost < 10) {
+            cataspeed = 35;
+        } 
+        else{
+            cataspeed = 100;
+        }
+ 
+        if (cpost < prime || cpost > 300){
+            Catapult.moveVelocity(cataspeed);
+        } else if (Shoot.isPressed()) { 
+            Catapult.moveVoltage(12000);
+        } 
+        else {
+            Catapult.moveVoltage(0);
+        }
+
+        if (Speed.isPressed()){
+            turnP = .075;
+            
+            leftFront.setBrakeMode(AbstractMotor::brakeMode::brake);
+            leftMiddle.setBrakeMode(AbstractMotor::brakeMode::brake);
+            leftRear.setBrakeMode(AbstractMotor::brakeMode::brake);
+            rightFront.setBrakeMode(AbstractMotor::brakeMode::brake);
+            rightMiddle.setBrakeMode(AbstractMotor::brakeMode::brake);
+            rightRear.setBrakeMode(AbstractMotor::brakeMode::brake);
+            
+        }else {
+            turnP = 1;
+
+            leftFront.setBrakeMode(AbstractMotor::brakeMode::coast);
+            leftMiddle.setBrakeMode(AbstractMotor::brakeMode::coast);
+            leftRear.setBrakeMode(AbstractMotor::brakeMode::coast);
+            rightFront.setBrakeMode(AbstractMotor::brakeMode::coast);
+            rightMiddle.setBrakeMode(AbstractMotor::brakeMode::coast);
+            rightRear.setBrakeMode(AbstractMotor::brakeMode::coast);
+        }
+    
+        pros::delay(15);
+	
+    }
 }
