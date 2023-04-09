@@ -4,13 +4,96 @@
 using namespace okapi;
 using namespace std;
 
-void initialize() {}
+// Creating motor objects for intake and catapult
+Motor Intake(8, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
+Motor Catapult(16, true, AbstractMotor::gearset::red, AbstractMotor::encoderUnits::degrees);
+pros::ADIDigitalOut expansion (2);
+pros::ADIDigitalOut boost (1);
+
+// Creating object for rotation sensor - gets position of catapult motor
+RotationSensor rotation(18);
+
+// Variables for catapult
+double cpost = rotation.get();
+float prime = 70;
+float cataspeed;
+
+std::shared_ptr<OdomChassisController> chassis =
+        ChassisControllerBuilder()
+        
+            .withMotors({-12, -13, -14}, 
+                        {1, 3, 5})
+            .withGains(
+                {0.00195, 0.000005, 0.0000105},
+                {0.00195, 0.000005, 0.0000105},
+                {0.00195, 0.000005, 0.0000105}
+            )
+            // green gearset, 4 inch wheel diameter, 11.5 inch wheel track
+            .withDimensions({AbstractMotor::gearset::blue, (48.0 / 36.0)}, {{3.25_in, 16_in}, imev5BlueTPR})
+            .withOdometry() // use the same scales as the chassis (above)
+            .buildOdometry(); // build an odometry chassis
+
+void initialize() {
+    boost.set_value(false);
+    expansion.set_value(false);
+}
 
 void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {}
+void move(QLength distance) {
+    chassis->moveDistance(distance);
+}
+
+void wait() {
+    chassis->waitUntilSettled();
+}
+
+void turn(QAngle angle) {
+    chassis->turnAngle(angle*0.75);
+}
+
+void roll(float Volts){
+  Intake.moveVoltage(Volts);
+}
+
+void stopRoll(){
+  Intake.moveVoltage(0);
+}
+
+void cataReset(){
+    while (Catapult.getTargetVelocity() != 0) {
+        float cpost = rotation.get();
+
+        if (prime - cpost < 10){
+            cataspeed = 35;
+        }else{
+            cataspeed = 100;
+        }
+    
+        if (cpost < prime || cpost > 300){
+            Catapult.moveVelocity(cataspeed);
+        } else {
+            Catapult.moveVoltage(0);
+        }   
+    }    
+}
+
+void shoot(){
+    Catapult.moveVoltage(12000);
+    cataReset();
+}
+
+void autonomous() {
+
+    chassis->setMaxVelocity(300);
+    chassis->setState({0_in, 0_in, 0_deg});
+
+    move(24_in);
+
+}
+
 
 void opcontrol() {
     // Creating controller object
@@ -28,6 +111,9 @@ void opcontrol() {
     ControllerButton outtake(ControllerDigital::L2);
     ControllerButton Shoot(ControllerDigital::R1);
     ControllerButton Speed(ControllerDigital::R2);
+    ControllerButton Expansion(ControllerDigital::Y);
+    ControllerButton BoostUp(ControllerDigital::up);
+    ControllerButton BoostDown(ControllerDigital::down);
 
     // Defining motor ports for the left and right sides of the robot
     const int LEFT_FRONT_PORT = 12;
@@ -49,8 +135,8 @@ void opcontrol() {
     Controller controller;
 
     // Defining constants for acceleration and deacceleration rates
-    const double ACCELERATION_RATE = 0.55; // increase in power per millisecond
-    const double DEACCELERATION_RATE = -2.5; // decrease in power per millisecond
+    const double ACCELERATION_RATE = 2.55; // increase in power per millisecond
+    const double DEACCELERATION_RATE = 4.65; // decrease in power per millisecond
     
     // Variables for catapult
     double cpost = rotation.get();
@@ -58,7 +144,7 @@ void opcontrol() {
     float cataspeed;
 
     // Variables for drive
-    double targetPower = 550.0;
+    double targetPower = 490.0;
     double currentPower;
     double turnP;
 
@@ -67,17 +153,18 @@ void opcontrol() {
         // Get joystick inputs
         double forwardPower = controller.getAnalog(ControllerAnalog::rightX);
         double turnPower = controller.getAnalog(ControllerAnalog::leftY);
+        forwardPower *= forwardPower;
+		turnPower *= (turnPower * 2);
         if (controller.getAnalog(ControllerAnalog::rightX) < 0) {forwardPower *= -1;}
         if (controller.getAnalog(ControllerAnalog::leftY) < 0) {turnPower *= -1;}
 
         double cpost = rotation.get();
         double leftPower = (forwardPower * turnP) + turnPower;
         double rightPower = (forwardPower * turnP) - turnPower;
-        Catapult.setBrakeMode(AbstractMotor::brakeMode::coast);
+        Catapult.setBrakeMode(AbstractMotor::brakeMode::brake);
 
 
-		forwardPower *= forwardPower;
-		turnPower *= turnPower;
+		
         // Limits the power to -5.0 to 5.0
         leftPower = std::clamp(leftPower, -5.0, 5.0);
         rightPower = std::clamp(rightPower, -5.0, 5.0);
@@ -126,8 +213,22 @@ void opcontrol() {
             Catapult.moveVoltage(0);
         }
 
+        if (Expansion.isPressed()){
+            expansion.set_value(true);
+        }else{
+            expansion.set_value(false);
+        }
+        
+        
+        if (BoostUp.isPressed()){
+            boost.set_value(false);
+        }
+        else if (BoostDown.isPressed()) {
+            boost.set_value(true);
+        }
+
         if (Speed.isPressed()){
-            turnP = .075;
+            turnP = .095;
             
             leftFront.setBrakeMode(AbstractMotor::brakeMode::brake);
             leftMiddle.setBrakeMode(AbstractMotor::brakeMode::brake);
