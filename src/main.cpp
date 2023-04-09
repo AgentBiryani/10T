@@ -15,7 +15,7 @@ RotationSensor rotation(18);
 
 // Variables for catapult
 double cpost = rotation.get();
-float prime = 70;
+float prime = 72;
 float cataspeed;
 
 std::shared_ptr<OdomChassisController> chassis =
@@ -86,11 +86,12 @@ void shoot(){
 }
 
 void autonomous() {
-
     chassis->setMaxVelocity(300);
     chassis->setState({0_in, 0_in, 0_deg});
 
-    move(24_in);
+
+
+    move(-36_in);
 
 }
 
@@ -135,16 +136,16 @@ void opcontrol() {
     Controller controller;
 
     // Defining constants for acceleration and deacceleration rates
-    const double ACCELERATION_RATE = 2.55; // increase in power per millisecond
-    const double DEACCELERATION_RATE = 4.65; // decrease in power per millisecond
+    const double ACCELERATION_RATE = 7.55; // increase in power per millisecond
+    const double DEACCELERATION_RATE = -11.65; // decrease in power per millisecond
     
     // Variables for catapult
     double cpost = rotation.get();
-    float prime = 71;
+    float prime = 72;
     float cataspeed;
 
     // Variables for drive
-    double targetPower = 490.0;
+    double targetPower = 475.0;
     double currentPower;
     double turnP;
 
@@ -153,11 +154,8 @@ void opcontrol() {
         // Get joystick inputs
         double forwardPower = controller.getAnalog(ControllerAnalog::rightX);
         double turnPower = controller.getAnalog(ControllerAnalog::leftY);
-        forwardPower *= forwardPower;
-		turnPower *= (turnPower * 2);
-        if (controller.getAnalog(ControllerAnalog::rightX) < 0) {forwardPower *= -1;}
-        if (controller.getAnalog(ControllerAnalog::leftY) < 0) {turnPower *= -1;}
-
+        forwardPower = (forwardPower * 21/13);
+		turnPower = (turnPower * 17/11);
         double cpost = rotation.get();
         double leftPower = (forwardPower * turnP) + turnPower;
         double rightPower = (forwardPower * turnP) - turnPower;
@@ -166,8 +164,8 @@ void opcontrol() {
 
 		
         // Limits the power to -5.0 to 5.0
-        leftPower = std::clamp(leftPower, -5.0, 5.0);
-        rightPower = std::clamp(rightPower, -5.0, 5.0);
+        leftPower = std::clamp(leftPower, -15.0, 15.0);
+        rightPower = std::clamp(rightPower, -15.0, 15.0);
 
         // Sets the power of each motor
         leftFront.moveVelocity(leftPower * currentPower);
@@ -208,6 +206,7 @@ void opcontrol() {
             Catapult.moveVelocity(cataspeed);
         } else if (Shoot.isPressed()) { 
             Catapult.moveVoltage(12000);
+            pros::delay(250);
         } 
         else {
             Catapult.moveVoltage(0);
