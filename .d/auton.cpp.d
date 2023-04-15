@@ -1,4 +1,4 @@
-bin/main.cpp.o: src/main.cpp include/main.h include/api.h \
+bin/auton.cpp.o: src/auton.cpp include/main.h include/api.h \
  include/pros/adi.h include/pros/colors.h include/pros/distance.h \
  include/pros/error.h include/pros/ext_adi.h include/pros/adi.h \
  include/pros/adi.h include/pros/gps.h include/pros/imu.h \
@@ -200,9 +200,8 @@ bin/main.cpp.o: src/main.cpp include/main.h include/api.h \
  include/okapi/api/units/QPressure.hpp \
  include/okapi/api/units/QTorque.hpp include/okapi/api/units/QVolume.hpp \
  include/okapi/impl/util/configurableTimeUtilFactory.hpp \
- include/okapi/impl/util/rate.hpp include/selection.cpp include/main.h \
- include/selection.h include/aerodynamiclunges/MAINCODE.cpp \
- include/aerodynamiclunges/declaration.cpp
+ include/okapi/impl/util/rate.hpp \
+ include/aerodynamiclunges/declaration.hpp
 include/main.h:
 include/api.h:
 include/pros/adi.h:
@@ -491,8 +490,4 @@ include/okapi/api/units/QTorque.hpp:
 include/okapi/api/units/QVolume.hpp:
 include/okapi/impl/util/configurableTimeUtilFactory.hpp:
 include/okapi/impl/util/rate.hpp:
-include/selection.cpp:
-include/main.h:
-include/selection.h:
-include/aerodynamiclunges/MAINCODE.cpp:
-include/aerodynamiclunges/declaration.cpp:
+include/aerodynamiclunges/declaration.hpp:
