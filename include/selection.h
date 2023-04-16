@@ -5,7 +5,7 @@
 //selector configuration
 #define HUE 300
 #define DEFAULT 1
-#define AUTONS "Full", "Half", "Do Nothing"
+#define AUTONS "_Full", "_Half", "_Roller"
 
 namespace selector{
 

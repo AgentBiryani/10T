@@ -208,6 +208,7 @@ void cataReset(){
 
 void shoot(){
     Catapult.moveVoltage(12000);
+    pros::delay(550);
     cataReset();
 }
 

@@ -85,9 +85,9 @@ void init(int hue, int default_auton, const char **autons){
 	tabview = lv_tabview_create(lv_scr_act(), NULL);
 
 	// add 3 tabs (the tabs are page (lv_page) and can be scrolled
-	lv_obj_t *redTab = lv_tabview_add_tab(tabview, "Far");
-	lv_obj_t *blueTab = lv_tabview_add_tab(tabview, "Close");
-	lv_obj_t *skillsTab = lv_tabview_add_tab(tabview, "Skills");
+	lv_obj_t *redTab = lv_tabview_add_tab(tabview, "Close");
+	lv_obj_t *blueTab = lv_tabview_add_tab(tabview, "Far");
+	lv_obj_t *skillsTab = lv_tabview_add_tab(tabview, "Do Nothing");
 
 	//set default tab
 	if(auton < 0){
@@ -118,7 +118,7 @@ void init(int hue, int default_auton, const char **autons){
 	// skills tab
 	lv_obj_t *skillsBtn = lv_btn_create(skillsTab, NULL);
 	lv_obj_t *label = lv_label_create(skillsBtn, NULL);
-	lv_label_set_text(label, "Skills");
+	lv_label_set_text(label, "_Do Nothing");
 	lv_btn_set_action(skillsBtn, LV_BTN_ACTION_CLICK, *skillsBtnAction);
 
 	static lv_style_t style;

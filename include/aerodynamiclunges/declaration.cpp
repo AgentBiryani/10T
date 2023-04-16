@@ -43,12 +43,11 @@ RotationSensor rotation(18);
 #pragma region DRIVER CONSTANTS 
 const double ACCELERATION_RATE = .55;
 const double DEACCELERATION_RATE = -1.85;
-double targetPower = 400.0;
+double targetPower = 600.0;
 double currentPower;
 double turnP;
 
 #pragma endregion
-
 #pragma region CATAPULT CONSTANTS 
 double cpost = rotation.get();
 float prime = 70;
