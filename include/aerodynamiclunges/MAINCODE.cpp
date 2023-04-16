@@ -2,7 +2,6 @@
 #include "okapi/api.hpp"
 #include "aerodynamiclunges/declaration.cpp"
 
-
 using namespace okapi;
 using namespace std;
 
@@ -122,34 +121,53 @@ std::shared_ptr<OdomChassisController> t =
     .buildOdometry();
 
 
-void roll(float Volts){
-  Intake.moveVoltage(Volts);
-}
+void turnPID(double angle){
+	double threshold;
+	if(angle <= 0.0){
+		threshold = .3;
+	}
+	else{
+		threshold = .3;
+	}
 
+	double error = angle - imu_sensor.get_rotation();
+	double integral;
+	double derivative;
+	double prevError;
+	double kp = 3;
+	double ki = 0;
+	double kd = 15;
 
-const int TURN_SPEED = 100;  // Motor speed for turning
-const int TURN_THRESHOLD = 3; // Stop turning when within 3 degrees of target
+    float start = imu_sensor.get_rotation();
+    float target = start + angle;
 
-// Function to turn a specific angle (in degrees) using the inertial sensor
-void turn(int angle) {
-  imu.reset();
-  int target = imu.get_rotation() + angle;
-  int direction = (angle > 0) ? 1 : -1;
-  while (abs(imu.get_rotation() - target) > TURN_THRESHOLD) {
-    int error = target - imu.get_rotation();
-    int speed = error * direction * TURN_SPEED / 180;
+	while(fabs(error) > threshold){
+
+		error = angle - imu_sensor.get_rotation();
+		integral  = integral + error;
+
+		if(error == 0 || fabs(error) >= angle){
+			integral = 0;
+		}
+
+		derivative = error - prevError;
+		prevError = error;
+		double p = error * kp;
+		double i = integral * ki;
+		double d = derivative * kd;
+
+		double vel = p + i + d;
+
+        leftFront.moveVelocity(vel);
+        leftMiddle.moveVelocity(vel);
+        leftRear.moveVelocity(vel);
+        rightFront.moveVelocity(vel);
+        rightMiddle.moveVelocity(vel);
+        rightRear.moveVelocity(vel);
+
+		pros::delay(15);
+	}
     
-    leftFront.moveVelocity(-speed);
-    leftMiddle.moveVelocity(-speed);
-    leftRear.moveVelocity(-speed);
-    rightFront.moveVelocity(speed);
-    rightMiddle.moveVelocity(speed);
-    rightRear.moveVelocity(speed);
-
-
-    // Wait for a short amount of time to allow the robot to turn
-    pros::delay(20);
-  }
     leftFront.moveVelocity(0);
     leftMiddle.moveVelocity(0);
     leftRear.moveVelocity(0);
@@ -158,18 +176,16 @@ void turn(int angle) {
     rightRear.moveVelocity(0);
 }
 
-// Example usage of the turn function
-void autonomous() {
-  // Turn 90 degrees to the right
-  turn(90);
 
-  // Turn 45 degrees to the left
-  turn(-45);
+void roll(float Volts){
+  Intake.moveVoltage(Volts);
 }
+
 
 void stopRoll(){
   Intake.moveVoltage(0);
 }
+
 
 void cataReset(){
     while (Catapult.getTargetVelocity() != 0) {
@@ -189,10 +205,12 @@ void cataReset(){
     }    
 }
 
+
 void shoot(){
     Catapult.moveVoltage(12000);
     cataReset();
 }
+
 
 #pragma endregion
 
