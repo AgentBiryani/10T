@@ -71,9 +71,8 @@ void opcontr() {
 
         if (Expansion.isPressed()){
             expansion.set_value(true);
-        }else{
-            expansion.set_value(false);
         }
+
         
         
         if (BoostUp.isPressed()){
@@ -114,20 +113,61 @@ void opcontr() {
 
 std::shared_ptr<OdomChassisController> t =
   ChassisControllerBuilder()
-    .withMotors({-12, -13, -14}, 
-                {  1,   3,  11})
-    .withDimensions(AbstractMotor::gearset::blue, {{3.25_in, 16_in}, (imev5BlueTPR * (48/36))})
+    .withMotors(Left, Right)   
+    .withSensors(Left.getEncoder(), Right.getEncoder())
+    .withDimensions(AbstractMotor::gearset::blue * (48/36), {{3.25_in, 16_in}, (imev5BlueTPR * (48/36))})
     .withOdometry({{3.25_in, 16_in}, quadEncoderTPR}, StateMode::FRAME_TRANSFORMATION)
     .buildOdometry();
+
+
+
+
+double pGain = 0.0012;
+double iGain = 0.00000;
+double dGain = 0.000001;
+
+auto model = t -> getModel();
+
+void movePID(double distanceL, double distanceR, int ms, double maxV = 1)
+{
+	double degreesL = distanceL / (3.141 * 3.25) * 360;
+	double degreesR = distanceR / (3.141 * 3.25) * 360;
+	auto drivePIDL = okapi::IterativeControllerFactory::posPID(pGain, iGain, dGain);
+	auto drivePIDR = okapi::IterativeControllerFactory::posPID(pGain, iGain, dGain);
+	std::cout << drivePIDL.getSampleTime().convert(okapi::millisecond) << std::endl;
+	model->resetSensors();
+
+	int timer = 0;
+	double errorL;
+	double errorR;
+	double powerL;
+	double powerR;
+	while (timer < ms)
+	{
+		errorL = degreesL + model->getSensorVals()[0] / 337.5 * 360;
+		errorR = degreesR + model->getSensorVals()[1] / 337.5 * 360;
+		powerL = drivePIDL.step(errorL);
+		powerR = drivePIDR.step(errorR);
+		model->tank(powerL * maxV, powerR * maxV);
+		std::cout << "Left: " << model->getSensorVals()[0] << " Right: " << model->getSensorVals()[1] << std::endl;
+		std::cout << errorL << " " << errorR << std::endl;
+
+		pros::delay(10);
+		timer += 10;
+	}
+
+	model->tank(0, 0);
+}
+
 
 
 void turnPID(double angle){
 	double threshold;
 	if(angle <= 0.0){
-		threshold = .3;
+		threshold = .9;
 	}
 	else{
-		threshold = .3;
+		threshold = .9;
 	}
 
 	double error = angle - imu_sensor.get_rotation();
@@ -208,7 +248,7 @@ void cataReset(){
 
 void shoot(){
     Catapult.moveVoltage(12000);
-    pros::delay(550);
+    pros::delay(250);
     cataReset();
 }
 

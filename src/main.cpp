@@ -20,16 +20,51 @@ void initialize() {
 
 void disabled() {}
 
-void competition_initialize() {}
+void competition_initialize() {
+    imu_sensor.reset();
+}
 
 void autonomous() {
 //Do Nothing
     if(selector::auton == 0 /* Nothing */){
 
+
     }
 
 //Close
-    if(selector::auton == 1 /* Full */){    
+    if(selector::auton == 1 /* Full */){  
+
+        movePID(48, 42, 1000, 1);  
+        
+        /*
+        t->setMaxVelocity(155);
+        t->moveDistance(26_in);
+        t->isSettled();
+        roll(-4500);
+        turnPID(100);
+        t->moveDistance(6_in);
+        t->isSettled();
+        stopRoll();
+        t->moveDistance(-14_in);
+        t->isSettled();
+        t->setMaxVelocity(250);
+        turnPID(98);
+        shoot();
+        cataReset();
+        turnPID(215);
+        roll(12000);
+        t->moveDistance(95_in);
+        t->isSettled();
+        stopRoll();
+        pros::delay(250);
+        turnPID(135);
+        t->moveDistance(-6_in);
+        shoot();
+
+        */
+
+
+
     }
     if(selector::auton == 2 /* Half */){
         t->setMaxVelocity(125);     
@@ -90,8 +125,10 @@ void autonomous() {
 
 //Far
     if(selector::auton == -1 /* Full */){
+
     }
     if(selector::auton == -2 /* Half */){
+
     }
     if(selector::auton == -3 /* Roller */){
         t->setMaxVelocity(125);
@@ -111,8 +148,8 @@ void autonomous() {
         t->isSettled();
         t->moveDistance(-72_in);
         t->isSettled();
-        t->turnAngle(-87_deg);
-        t->isSettled();
+        turnPID(-90);
+        
     }
 
 }

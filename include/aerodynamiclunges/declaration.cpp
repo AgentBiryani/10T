@@ -5,6 +5,21 @@
 using namespace okapi;
 using namespace std;
 
+struct PID
+{
+	float kP;
+	float kI;
+	float kD;
+	float integral;
+	float derivative;
+	float error;
+	float previous_error;
+	float speed;
+	float target;
+	float sensor;
+};
+
+typedef struct PID pid;
 
 Controller controller;
 
@@ -30,7 +45,7 @@ Motor rightFront(RIGHT_FRONT_PORT, true, AbstractMotor::gearset::blue, AbstractM
 Motor rightMiddle(RIGHT_MIDDLE_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
 Motor rightRear(RIGHT_REAR_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
 
-MotorGroup Left({12, 13, 14});
+MotorGroup Left({-12, -13, -14});
 MotorGroup Right({1, 3, 11});
 
 Motor Intake(8, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
