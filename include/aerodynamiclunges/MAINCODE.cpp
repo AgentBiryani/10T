@@ -83,7 +83,7 @@ void opcontr() {
         }
 
         if (Speed.isPressed()){
-            turnP = .0135;
+            turnP = .135;
             
             leftFront.setBrakeMode(AbstractMotor::brakeMode::brake);
             leftMiddle.setBrakeMode(AbstractMotor::brakeMode::brake);
