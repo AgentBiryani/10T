@@ -25,130 +25,115 @@ void competition_initialize() {
 }
 
 void autonomous() {
-//Do Nothing
-    if(selector::auton == 0 /* Nothing */){
+//Skills
+    if(selector::auton == 0 /* Skills */){
 
 
     }
 
 //Close
-    if(selector::auton == 1 /* Full */){  
+    if(selector::auton == 1 /* Nothing */){ 
 
-        movePID(48, 42, 1000, 1);  
-        
-        /*
-        t->setMaxVelocity(155);
-        t->moveDistance(26_in);
-        t->isSettled();
-        roll(-4500);
-        turnPID(100);
-        t->moveDistance(6_in);
-        t->isSettled();
-        stopRoll();
-        t->moveDistance(-14_in);
-        t->isSettled();
-        t->setMaxVelocity(250);
-        turnPID(98);
-        shoot();
-        cataReset();
-        turnPID(215);
-        roll(12000);
-        t->moveDistance(95_in);
-        t->isSettled();
-        stopRoll();
-        pros::delay(250);
-        turnPID(135);
-        t->moveDistance(-6_in);
-        shoot();
-
-        */
-
-
-
+        //jerk();
+        turnPID(25);
+        //turnPID(0);
     }
     if(selector::auton == 2 /* Half */){
-        t->setMaxVelocity(125);     
-        t->turnAngle(-9_deg);
-        t->waitUntilSettled();
-        pros::delay(500);
+        turnPID(-9);
+        pros::delay(250);
         shoot();
-        pros::delay(500);
-        t->moveDistance(4_in);
-        t->waitUntilSettled();
-        pros::delay(500);
-        roll(-4500);
-        pros::delay(750);
-        t->moveDistance(-6_in);
-        t->waitUntilSettled();
-        pros::delay(500);
-        t->turnAngle(-122_deg);
-        t->waitUntilSettled();
-        t->setMaxVelocity(250);
-        pros::delay(500);
-        t->moveDistance(35_in);
-        pros::delay(500);
+        roll(-4000);
+        pros::delay(130);
+        movePID(6, 6, 1000);
+        pros::delay(100);
+        movePID(-6, -6, 1000);
+        stopRoll();
+        pros::delay(100);
+        turnPID(-133.5);
+        pros::delay(250);
+        movePID(37, 37, 1000, 0.6);
+        pros::delay(100);
         roll(12000);
+        movePID(40, 40, 1000, 0.4);
         pros::delay(500);
-        t->setMaxVelocity(125);
-        t->moveDistance(30_in);
-        t->waitUntilSettled();
-        pros::delay(500);
-        t->turnAngle(88_deg);
-        pros::delay(500);
+        turnPID(-40);
+        pros::delay(100);
+        movePID(-3, -3, 1000);
+        pros::delay(100);
         shoot();
+
+
     }
     if(selector::auton == 3 /* Roller */){
-        t->setMaxVelocity(125);     
-        t->turnAngle(-9_deg);
-        t->waitUntilSettled();
-        pros::delay(500);
+        turnPID(-9);
+        pros::delay(250);
         shoot();
-        pros::delay(500);
-        t->moveDistance(4_in);
-        t->waitUntilSettled();
-        pros::delay(500);
-        roll(-4500);
-        pros::delay(750);
-        t->moveDistance(-6_in);
-        pros::delay(500);
+        roll(-4000);
+        pros::delay(130);
+        movePID(6, 6, 1000);
+        pros::delay(100);
+        movePID(-6, -6, 1000);
         stopRoll();
-        t->turnAngle(-82_deg);
-        t->waitUntilSettled();
-        t->moveDistance(67_in);
-        t->waitUntilSettled();
-        pros::delay(500);
-        t->turnAngle(-86_deg);
-
+        pros::delay(100);
+        turnPID(-90);
+        pros::delay(250);
+        movePID(68, 68, 2000, 0.6);
+        turnPID(-180);
 
     }
 
 
 //Far
-    if(selector::auton == -1 /* Full */){
+    if(selector::auton == -1 /* Nothing */){
 
     }
     if(selector::auton == -2 /* Half */){
+        movePID(28, 28, 300);
+        pros::delay(300);
+        turnPID(80);
+        roll(-4500);
+        movePID(10, 10, 750);
+        pros::delay(300);
+        movePID(-7.5, -7.5, 1000);
+        stopRoll();
+        pros::delay(250);
+        turnPID(99);
+        pros::delay(100);
+        shoot();
+        cataReset();
+        turnPID(224);
+        pros::delay(300);
+        roll(12000);
+        movePID(90, 90, 1750, .5);
+        pros::delay(750);
+        jerk();
+        pros::delay(300);
+        turnPID(135);
+        pros::delay(300);
+        stopRoll();
+        movePID(7.5, 7.5, 950, .5);
+        shoot();
+
 
     }
     if(selector::auton == -3 /* Roller */){
-        t->setMaxVelocity(125);
-        t->isSettled();
-        t->moveDistance(28_in);
-        t->isSettled();
-        roll(-4500);
-        t->turnAngle(90_deg);
-        t->isSettled();
-        t->moveDistance(6_in);
-        t->isSettled();
+        movePID(28, 28, 300);
         pros::delay(300);
+        turnPID(80);
+        roll(-4500);
+        movePID(10, 10, 750);
+        pros::delay(300);
+        movePID(-7.5, -7.5, 1000);
         stopRoll();
-        t->moveDistance(-6_in);
-        t->isSettled();
-        t->turnAngle(-90_deg);
-        t->isSettled();
-        t->moveDistance(-72_in);
-        t->isSettled();
-        turnPID(-90);
+        pros::delay(250);
+        turnPID(99);
+        pros::delay(100);
+        shoot();
+        cataReset();
+        turnPID(180);
+        pros::delay(300);
+        movePID(60, 60, 1250);
+        turnPID(270);
         
     }
 

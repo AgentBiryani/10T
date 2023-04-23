@@ -3,9 +3,9 @@
 #include <string>
 
 //selector configuration
-#define HUE 300
+#define HUE 180
 #define DEFAULT 1
-#define AUTONS "_Full", "_Half", "_Roller"
+#define AUTONS "_Nothing", "_Half", "_Roller"
 
 namespace selector{
 

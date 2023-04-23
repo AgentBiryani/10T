@@ -72,18 +72,18 @@ void opcontr() {
         if (Expansion.isPressed()){
             expansion.set_value(true);
         }
-
         
-        
-        if (BoostUp.isPressed()){
-            boost.set_value(false);
+        if (BoostDown.isPressed()) {
+            boost.set_value(true);
         }
-        else if (BoostDown.isPressed()) {
+        
+        
+        if (BoostDown.isPressed()) {
             boost.set_value(true);
         }
 
         if (Speed.isPressed()){
-            turnP = .095;
+            turnP = .0135;
             
             leftFront.setBrakeMode(AbstractMotor::brakeMode::brake);
             leftMiddle.setBrakeMode(AbstractMotor::brakeMode::brake);
@@ -164,19 +164,19 @@ void movePID(double distanceL, double distanceR, int ms, double maxV = 1)
 void turnPID(double angle){
 	double threshold;
 	if(angle <= 0.0){
-		threshold = .9;
+		threshold = 1.5;
 	}
 	else{
-		threshold = .9;
+		threshold = 0.7;
 	}
 
 	double error = angle - imu_sensor.get_rotation();
 	double integral;
 	double derivative;
 	double prevError;
-	double kp = 3;
+	double kp = 2.4;
 	double ki = 0;
-	double kd = 15;
+	double kd = 4;
 
     float start = imu_sensor.get_rotation();
     float target = start + angle;
@@ -198,6 +198,25 @@ void turnPID(double angle){
 
 		double vel = p + i + d;
 
+        float bcap = 30;
+        if (abs(error) < 30)
+        {
+            bcap = 20;
+        }
+        if (abs(vel) <= bcap)
+        {
+            if (vel > 0)
+            {
+                vel = bcap;
+            }
+            else
+            {
+                vel = -bcap;
+            }
+        }
+
+        //printf("%f\n", vel);
+
         leftFront.moveVelocity(vel);
         leftMiddle.moveVelocity(vel);
         leftRear.moveVelocity(vel);
@@ -214,6 +233,81 @@ void turnPID(double angle){
     rightFront.moveVelocity(0);
     rightMiddle.moveVelocity(0);
     rightRear.moveVelocity(0);
+}
+
+
+void jerk(){
+    leftFront.moveVelocity(-600);
+    leftMiddle.moveVelocity(-600);
+    leftRear.moveVelocity(-600);
+    rightFront.moveVelocity(600);
+    rightMiddle.moveVelocity(600);
+    rightRear.moveVelocity(600);
+
+    pros::delay(100);
+    
+    leftFront.moveVelocity(600);
+    leftMiddle.moveVelocity(600);
+    leftRear.moveVelocity(600);
+    rightFront.moveVelocity(-600);
+    rightMiddle.moveVelocity(-600);
+    rightRear.moveVelocity(-600);
+
+    pros::delay(100);
+
+    leftFront.moveVelocity(-600);
+    leftMiddle.moveVelocity(-600);
+    leftRear.moveVelocity(-600);
+    rightFront.moveVelocity(600);
+    rightMiddle.moveVelocity(600);
+    rightRear.moveVelocity(600);
+
+    pros::delay(100);
+    
+    leftFront.moveVelocity(600);
+    leftMiddle.moveVelocity(600);
+    leftRear.moveVelocity(600);
+    rightFront.moveVelocity(-600);
+    rightMiddle.moveVelocity(-600);
+    rightRear.moveVelocity(-600);
+    
+    pros::delay(100);
+    
+    leftFront.moveVelocity(-600);
+    leftMiddle.moveVelocity(-600);
+    leftRear.moveVelocity(-600);
+    rightFront.moveVelocity(600);
+    rightMiddle.moveVelocity(600);
+    rightRear.moveVelocity(600);
+
+    pros::delay(100);
+    
+    leftFront.moveVelocity(600);
+    leftMiddle.moveVelocity(600);
+    leftRear.moveVelocity(600);
+    rightFront.moveVelocity(-600);
+    rightMiddle.moveVelocity(-600);
+    rightRear.moveVelocity(-600);
+
+    pros::delay(100);
+    
+    leftFront.moveVelocity(-600);
+    leftMiddle.moveVelocity(-600);
+    leftRear.moveVelocity(-600);
+    rightFront.moveVelocity(600);
+    rightMiddle.moveVelocity(600);
+    rightRear.moveVelocity(600);
+
+    pros::delay(100);
+    
+    leftFront.moveVelocity(0);
+    leftMiddle.moveVelocity(0);
+    leftRear.moveVelocity(0);
+    rightFront.moveVelocity(0);
+    rightMiddle.moveVelocity(0);
+    rightRear.moveVelocity(0);
+
+
 }
 
 

@@ -28,7 +28,6 @@ ControllerButton outtake(ControllerDigital::L2);
 ControllerButton Shoot(ControllerDigital::R1);
 ControllerButton Speed(ControllerDigital::R2);
 ControllerButton Expansion(ControllerDigital::Y);
-ControllerButton BoostUp(ControllerDigital::up);
 ControllerButton BoostDown(ControllerDigital::down);
 
 const int LEFT_FRONT_PORT = 12;
@@ -45,8 +44,8 @@ Motor rightFront(RIGHT_FRONT_PORT, true, AbstractMotor::gearset::blue, AbstractM
 Motor rightMiddle(RIGHT_MIDDLE_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
 Motor rightRear(RIGHT_REAR_PORT, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
 
-MotorGroup Left({-12, -13, -14});
-MotorGroup Right({1, 3, 11});
+MotorGroup Left({12, 13, 14});
+MotorGroup Right({-1, -3, -11});
 
 Motor Intake(8, true, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
 Motor Catapult(16, true, AbstractMotor::gearset::red, AbstractMotor::encoderUnits::degrees);
